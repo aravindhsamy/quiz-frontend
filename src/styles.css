@@ -1,0 +1,9 @@
+input, select, button {
+    margin: 5px;
+    padding: 5px;
+  }
+  
+  button {
+    cursor: pointer;
+  }
+  
