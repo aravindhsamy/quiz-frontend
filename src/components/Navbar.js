@@ -1,5 +1,6 @@
-import { AppBar, Toolbar, Typography, Button } from "@mui/material";
-import { Link } from "react-router-dom";
+// import { AppBar, Toolbar, Typography, Button } from "@mui/material";
+import { AppBar, Toolbar, Typography} from "@mui/material";
+// import { Link } from "react-router-dom";
 
 export default function Navbar() {
   return (
@@ -9,13 +10,13 @@ export default function Navbar() {
           Quiz Platform
         </Typography>
 
-        <Button color="inherit" component={Link} to="/">
+        {/* <Button color="inherit" component={Link} to="/">
           Home
         </Button>
 
         <Button color="inherit" component={Link} to="/admin">
           Admin
-        </Button>
+        </Button> */}
       </Toolbar>
     </AppBar>
   );
