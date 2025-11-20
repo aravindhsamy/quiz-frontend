@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Container,
   Typography,
@@ -12,21 +12,23 @@ import {
 import API from "../api";
 
 export default function QuizPage() {
-  const { id } = useParams(); // Student ID
   const location = useLocation();
   const navigate = useNavigate();
 
   const student = location.state?.student;
-
   const [quiz, setQuiz] = useState(null);
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [timeLeft, setTimeLeft] = useState(20 * 60); // 20 minutes in seconds
 
-  const [timeLeft, setTimeLeft] = useState(60); // 20 minutes in seconds
+  // Ref to safely call handleSubmit inside setInterval
+  const handleSubmitRef = useRef();
 
   // Fetch quiz based on student's quizTitle
   useEffect(() => {
+    if (!student) return;
+
     const fetchQuiz = async () => {
       try {
         const res = await API.get("/quizzes"); // fetch all quizzes
@@ -41,29 +43,24 @@ export default function QuizPage() {
       }
     };
 
-    if (student) fetchQuiz();
+    fetchQuiz();
   }, [student]);
 
-  // Persist start time in localStorage
+  // Timer + auto-submit logic
   useEffect(() => {
     if (!student) return;
 
     const storedStart = localStorage.getItem(`quizStart_${student._id}`);
-    let start;
-    if (storedStart) {
-      start = parseInt(storedStart);
-    } else {
-      start = Date.now();
-      localStorage.setItem(`quizStart_${student._id}`, start);
-    }
+    let start = storedStart ? parseInt(storedStart) : Date.now();
+    if (!storedStart) localStorage.setItem(`quizStart_${student._id}`, start);
 
     const timer = setInterval(() => {
       const elapsed = Math.floor((Date.now() - start) / 1000);
-      const remaining = 60 - elapsed;
+      const remaining = 20 * 60 - elapsed;
 
       if (remaining <= 0) {
         clearInterval(timer);
-        handleSubmit(); // auto-submit when time is up
+        handleSubmitRef.current(); // auto-submit
       } else {
         setTimeLeft(remaining);
       }
@@ -71,6 +68,29 @@ export default function QuizPage() {
 
     return () => clearInterval(timer);
   }, [student]);
+
+  // Submit function
+  const handleSubmit = async () => {
+    try {
+      const res = await API.post("/scores/submit", {
+        studentId: student._id,
+        quizId: quiz._id,
+        answers: quiz.questions.map((q, i) => ({
+          questionId: q._id,
+          selectedAnswer: answers[i]?.selectedAnswer || null,
+        })),
+      });
+
+      localStorage.removeItem(`quizStart_${student._id}`); // clear timer
+      navigate(`/result/${res.data._id}`);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to submit quiz");
+    }
+  };
+
+  // Update ref for timer
+  handleSubmitRef.current = handleSubmit;
 
   if (loading) return <Container>Loading quiz...</Container>;
   if (!quiz) return <Container>No quiz found</Container>;
@@ -99,27 +119,6 @@ export default function QuizPage() {
     }
   };
 
-  const handleSubmit = async () => {
-    try {
-      const res = await API.post("/scores/submit", {
-        studentId: student._id,
-        quizId: quiz._id,
-        answers: quiz.questions.map((q, i) => ({
-          questionId: q._id,
-          selectedAnswer: answers[i]?.selectedAnswer || null, // unanswered = null
-        })),
-      });
-
-      localStorage.removeItem(`quizStart_${student._id}`); // clear timer
-      const score = res.data;
-      navigate(`/result/${score._id}`);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to submit quiz");
-    }
-  };
-
-  // Convert timeLeft to minutes and seconds
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
 
@@ -144,7 +143,12 @@ export default function QuizPage() {
           onChange={handleAnswerChange}
         >
           {question.options.map((option, i) => (
-            <FormControlLabel key={i} value={option} control={<Radio />} label={option} />
+            <FormControlLabel
+              key={i}
+              value={option}
+              control={<Radio />}
+              label={option}
+            />
           ))}
         </RadioGroup>
 
