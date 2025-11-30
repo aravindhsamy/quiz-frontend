@@ -1,5 +1,15 @@
 import { useState, useEffect } from "react";
-import { Container, Typography, List, ListItem, ListItemText, Paper } from "@mui/material";
+import {
+  Container,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from "@mui/material";
 import API from "../api";
 
 export default function AdminScores() {
@@ -29,26 +39,39 @@ export default function AdminScores() {
         Student Scores
       </Typography>
 
-      <List>
-        {scores.map((score) => (
-          <Paper key={score._id} sx={{ p: 2, mb: 2 }}>
-            <ListItem>
-              <ListItemText
-                primary={`${score.student.studentName} — ${score.quiz.title}`}
-                secondary={
-                  <>
-                    Roll Number: {score.student.rollNumber} <br />
-                    System Number: {score.student.systemNumber} <br />
-                    Score: {score.score} / {score.totalQuestions} <br />
-                    Percentage: {score.percentage.toFixed(2)}% <br />
-                    Status: <strong>{score.status}</strong>
-                  </>
-                }
-              />
-            </ListItem>
-          </Paper>
-        ))}
-      </List>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Student Name</TableCell>
+              <TableCell>Roll Number</TableCell>
+              <TableCell>System Number</TableCell>
+              <TableCell>Quiz Title</TableCell>
+              <TableCell>Score</TableCell>
+              <TableCell>Percentage</TableCell>
+              <TableCell>Status</TableCell>
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {scores.map((score) => (
+              <TableRow key={score._id}>
+                <TableCell>{score.student.studentName}</TableCell>
+                <TableCell>{score.student.rollNumber}</TableCell>
+                <TableCell>{score.student.systemNumber}</TableCell>
+                <TableCell>{score.quiz.title}</TableCell>
+                <TableCell>
+                  {score.score} / {score.totalQuestions}
+                </TableCell>
+                <TableCell>{score.percentage.toFixed(2)}%</TableCell>
+                <TableCell>
+                  <strong>{score.status}</strong>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </Container>
   );
 }

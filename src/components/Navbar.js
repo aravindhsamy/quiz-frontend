@@ -7,7 +7,7 @@ export default function Navbar() {
     <AppBar position="static">
       <Toolbar>
         <Typography variant="h6" sx={{ flexGrow: 1 }}>
-          Quiz Platform
+          Quiz 
         </Typography>
 
         {/* <Button color="inherit" component={Link} to="/">

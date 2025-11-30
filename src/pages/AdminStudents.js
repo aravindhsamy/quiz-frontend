@@ -1,5 +1,15 @@
 import { useState, useEffect } from "react";
-import { Container, Typography, List, ListItem, ListItemText, Paper } from "@mui/material";
+import {
+  Container,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from "@mui/material";
 import API from "../api";
 
 export default function AdminStudents() {
@@ -29,25 +39,31 @@ export default function AdminStudents() {
         Students List
       </Typography>
 
-      <List>
-        {students.map((student) => (
-          <Paper key={student._id} sx={{ p: 2, mb: 2 }}>
-            <ListItem>
-              <ListItemText
-                primary={student.studentName}
-                secondary={
-                  <>
-                    Roll Number: {student.rollNumber} <br />
-                    System Number: {student.systemNumber} <br />
-                    Quiz Code: {student.quizCode} <br />
-                    Quiz Title: {student.quizTitle}
-                  </>
-                }
-              />
-            </ListItem>
-          </Paper>
-        ))}
-      </List>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Student Name</TableCell>
+              <TableCell>Roll Number</TableCell>
+              <TableCell>System Number</TableCell>
+              <TableCell>Quiz Code</TableCell>
+              <TableCell>Quiz Title</TableCell>
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {students.map((student) => (
+              <TableRow key={student._id}>
+                <TableCell>{student.studentName}</TableCell>
+                <TableCell>{student.rollNumber}</TableCell>
+                <TableCell>{student.systemNumber}</TableCell>
+                <TableCell>{student.quizCode}</TableCell>
+                <TableCell>{student.quizTitle}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </Container>
   );
 }
